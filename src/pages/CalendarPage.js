@@ -1,29 +1,34 @@
 import styled from "styled-components";
+import { format } from "date-fns";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import Grid from "@material-ui/core/Grid";
-import Button from "@material-ui/core/Button";
-
-// import "@fullcalendar/core/main.css";
-// import "@fullcalendar/daygrid/main.css";
-
-const events = [
-  { title: "Tommy Crafton", start: "2021-06-01" },
-  { title: "John Doe", start: "2021-06-01" },
-  { title: "Scott Miller", start: "2021-06-01" },
-  { title: "Brian Foster", start: "2021-06-01" },
-  { title: "Tim Meadows", start: "2021-06-01" },
-  { title: "Steve Glenn", start: "2021-06-01" },
-  { title: "Bruce", start: "2021-06-01" },
-];
+import axios from "axios";
+import { EMPLOYEE_URL } from "../utils/contants";
 
 const CalendarPage = () => {
   return (
     <Wrapper>
       <FullCalendar
         defaultView="dayGridMonth"
+        height={800}
         plugins={[dayGridPlugin]}
-        events={events}
+        events={(info, success, failure) => {
+          axios
+            .get(
+              `${EMPLOYEE_URL}GetSalaryEmpOutOfPlantForDateRange?startDate=${info.startStr}&endDate=${info.endStr}`
+            )
+            .then((res) => {
+              success(
+                res.data.map((e) => {
+                  let dateOut = format(new Date(e.DATE_OUT), "yyyy-MM-dd");
+                  return {
+                    title: e.NAME,
+                    start: dateOut,
+                  };
+                })
+              );
+            });
+        }}
         dayMaxEvents={true}
       />
     </Wrapper>
@@ -32,7 +37,8 @@ const CalendarPage = () => {
 
 const Wrapper = styled.div`
   /* max-height: 56.5vw !important; */
-  max-width: 55%;
+  max-width: 90%;
+  max-height: 25%;
   padding-left: 2rem;
   padding-bottom: 2rem;
 `;
